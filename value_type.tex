@@ -1,0 +1,75 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{anyfontsize}
+\usepackage{amsmath}
+
+\begin{document}
+\noindent
+{\large Value Representation:}
+\par the DNA sequence representing a certain value begins with a type code, indicating the value type. The following is a stream of nucleotides, with fixed or volatile length. There are 4 types of nucleotide, mapped to the 4 digits of quaternary:
+\begin{center}
+    \begin{tabular}{c|c|c}
+        nucleotide & quaternary digit & binary digits \\
+        \hline
+        A & 0 & 00 \\
+        T & 1 & 01 \\
+        C & 2 & 10 \\
+        G & 3 & 11 \\
+    \end{tabular}
+\end{center}
+The value representation is based on this mapping principle.\\[6pt]
+\textbf{signed integer:}\\
+Type code: A(non-negative), T(negative)\\
+Length: volatile\\
+Representation: 
+\par A integer's type code may be \texttt{A} or \texttt{T}. \texttt{A} stands for non-nagative numbers and \texttt{T} stands for negative ones. A 2-nt sequence is attached to the type code, encoding the length of the quaternary representation of $|x|$ which is stored in the following sequence.  
+\begin{center}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        A/T & length: 2 nts & value: \textit{length} nts \\
+        \hline
+    \end{tabular}
+    \\[3pt]{\small \textbf{Figure 1.} DNA pattern of a signed integer.}
+\end{center}
+\textbf{floating-point number:}\\
+Type code: C\\
+Length: 16 nts\\
+Representation: 
+\par We store a floating-point number according to IEEE floating-point standard, with a bit sequence which will be converted into DNA sequence. The form of representation is $V=(-1)^s \times M \times 2^E$. The length of the bit sequence is 32, including a sign bit, a 8-bit exponent field and a 23-bit fraction field.(for details see IEEE 754)
+%
+%\par Similar to floating-point storage in computer system, we use \textit{exponent} and \textit{significand} to represent floating-point numbers with DNA sequences. A real number can be written in quaternary using scientific notation. The expression is:
+%\[
+%f = \textit{significand} \times 4^{\textit{exponent}}.
+%\]
+%The significand is stored in the first 12 nts, and the exponent is stored in the last 4 nts, with a exponent bias 127 (added to the actual exponent when encoding). For example, the quaternary number $120.123_4$ can be represented as $1.20123\times 4^2$. The encoded exponent is $2+127=(129)_{10}=(10000001)_2=(2001)_4$, thus the whole sequence will be:
+%\begin{center}
+%   \begin{tabular}{c}
+%        0000001201232001 \\
+%        \hline
+%        AAAAAATCATCGCAAT
+%    \end{tabular}
+%\end{center}
+%The digits of significand should be no more than 12, and the actual exponent ranges from -127 to 128.
+
+\begin{center}
+    \begin{tabular}{|c|c|}
+        \hline
+        C & value: 16 nts \\
+        \hline
+    \end{tabular}
+    \\[3pt]{\small \textbf{Figure 2.} DNA pattern of a floating-point number.}
+\end{center}
+\textbf{string:}\\
+Type code: G\\
+Length: volatile\\
+Representation:
+\par We use ASCII code to encode a character. Each character in a string takes up 4 nts. A string ends with a \texttt{`$\backslash$0'}.
+\begin{center}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        G & sequence encoding characters & AAAA(\texttt{`$\backslash$0'})\\
+        \hline
+    \end{tabular}
+    \\[3pt]{\small \textbf{Figure 3.} DNA pattern of a string.}
+\end{center}
+\end{document}
