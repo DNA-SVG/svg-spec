@@ -63,11 +63,11 @@ Representation:
 Type code: G\\
 Length: volatile\\
 Representation:
-\par We use ASCII code to encode a character. Each character in a string takes up 4 nts. A string ends with a \texttt{`$\backslash$0'}.
+\par We use ASCII code to encode a character. Each character in a string takes up 4 nts. An unsigned integer(without type code, and should be intepreted as non-negative) which is prepended to the content of the string, illustrates it's length.
 \begin{center}
-    \begin{tabular}{|c|c|c|}
+    \begin{tabular}{|c|c|c|c|}
         \hline
-        G & sequence encoding characters & AAAA(\texttt{`$\backslash$0'})\\
+        G & length & content encoding & AAAA(\texttt{`$\backslash$0'})\\
         \hline
     \end{tabular}
     \\[3pt]{\small \textbf{Figure 3.} DNA pattern of a string.}
