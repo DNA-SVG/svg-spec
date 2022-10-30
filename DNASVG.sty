@@ -4,34 +4,35 @@
 \RequirePackage{anyfontsize}
 
 \newenvironment{Element}[1]
-{{\fontsize{16pt}{0}\selectfont \textbf{\textless #1\textgreater}}\\[10pt]}
+{   \noindent
+    {\fontsize{16pt}{0}\selectfont \textbf{\textless #1\textgreater}}\\[10pt]
+}
 {
 
-\vspace{15pt}
+    \vspace{15pt}
 }
 
 \newenvironment{Required}
 {
-{\fontsize{12pt}{0}\selectfont Required Attributes:}\vspace{6pt}
-\begin{center}
-\begin{tabular}{c|c|c}
-\hline
- order & name & type\\
-\hline
+    {\fontsize{12pt}{0}\selectfont Required Attributes:}\vspace{6pt}
+    \begin{center}
+    \begin{tabular}{c|c|c}
+    \hline
+     order & name & type\\
+    \hline
 }
 {
-\hline
-\end{tabular}
-\end{center}
-\vspace{6pt}
+    \hline
+    \end{tabular}
+    \end{center}
+    \vspace{6pt}
 }
 
 \newenvironment{Optional}
 {
-{\fontsize{12pt}{0}\selectfont Optional Attributes:}\\[6pt]
+    {\fontsize{12pt}{0}\selectfont Optional Attributes:}\\[6pt]
 }
-{
-}
+{}
 
 \newcommand{\Line}[3]{#1 & #2 & #3\\}
 
