@@ -1,0 +1,20 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{anyfontsize}
+\usepackage{amsmath}
+
+\title{Split Long and Merge Short strands}
+\begin{document}
+    \maketitle
+    We can get a encoded DNA list from the work we have done,but there is a problem that the actual DNA length of strands is negated. So we split long strands and merge short strands for addressing this issue.
+    \par Suppose that the Min Length is 150 and Max length is 300. Then 1nt is used to record the type of strands. A for normal, T for long, C for short.
+    \par 
+    \textbf{Split Long Strands:} split the long stands to several strands. If the the last one is short, then make the last two strands half.
+    \emph{Structure: T + (the id of the original strands) + (the order of current processed strands) + content}
+    \par 
+    \textbf{Merge Short Strands:} merge the short ones
+    \emph{Structure : C + (the encoded number of original strands length + content) for each short strands}
+
+
+
+\end{document}

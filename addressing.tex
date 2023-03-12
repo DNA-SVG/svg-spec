@@ -1,0 +1,22 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{anyfontsize}
+\usepackage{amsmath}
+
+\begin{document}
+\noindent
+{\large Addressing:}
+\par In DNA storage, each strand in the DNA pool is a data block. To identify the position of a data block, an address sequence is attached to the strand, so that the information of the whole input string can be restored correctly. 
+\par In DNA-SVG encoding, before splitting or merging the strands for appropriate sequence length, a single strand stores one tag(or element) in \texttt{.svg} file. 
+\par The structure of a \texttt{.xml} file can be parsed as a tree. Each tag is a node on the tree. Thus, to identify the position of a tag in \texttt{.xml} file means to locate it on the xml tree. In tree storage, each node saves the identifier(a unique address or name) of all of its children.
+For shorter sequence length, we convert the xml tree to a \textbf{left-child, right-sibling binary tree} first. After this modification, the address sequence of a tag should have the following form:
+\begin{center}
+    \begin{tabular}{c|c|c}
+        \hline
+        self identifier & left-child identifier & right-sibling identifier\\
+        \hline
+    \end{tabular}
+    \\[3pt]{\small \textbf{Figure 1.} Address sequence.}
+\end{center}
+where we use the \textbf{dfs order} of the tag as its identifier.
+\end{document}
