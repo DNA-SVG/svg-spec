@@ -22,11 +22,12 @@ The value representation is based on this mapping principle.\\[6pt]
 Type code: A(non-negative), T(negative)\\
 Length: volatile\\
 Representation: 
-\par A integer's type code may be \texttt{A} or \texttt{T}. \texttt{A} stands for non-nagative numbers and \texttt{T} stands for negative ones. A 2-nt sequence is attached to the type code, encoding the length of the quaternary representation of $|x|$ which is stored in the following sequence.  
+\par A integer's type code may be \texttt{A} or \texttt{T}. \texttt{A} stands for non-nagative numbers and \texttt{T} stands for negative ones. A 2-nt sequence is attached to the type code, encoding the length of the quaternary representation of $|x|$ which is stored in the following sequence.
+\par When a integer is not used for representing the value of an attribute, but the size information of some container(e.g., the length of a string or the total number of optional attributes in a tag), the type code is omitted.
 \begin{center}
     \begin{tabular}{|c|c|c|}
         \hline
-        A/T & length: 2 nts & value: \textit{length} nts \\
+        A/T & length: 2 nt's & value: \textit{length} nt's \\
         \hline
     \end{tabular}
     \\[3pt]{\small \textbf{Figure 1.} DNA pattern of a signed integer.}
@@ -54,7 +55,7 @@ Representation:
 \begin{center}
     \begin{tabular}{|c|c|}
         \hline
-        C & value: 16 nts \\
+        C & value: 16 nt's \\
         \hline
     \end{tabular}
     \\[3pt]{\small \textbf{Figure 2.} DNA pattern of a floating-point number.}
@@ -63,11 +64,11 @@ Representation:
 Type code: G\\
 Length: volatile\\
 Representation:
-\par We use ASCII code to encode a character. Each character in a string takes up 4 nts. An unsigned integer(without type code, and should be intepreted as non-negative) which is prepended to the content of the string, illustrates it's length.
+\par A string begins with its length(an integer indicating the number of characters in this string, and as is mentioned before, type code is omitted). We use ASCII code to encode a character. Each character in a string takes up 4 nt's (or 1 byte). 
 \begin{center}
     \begin{tabular}{|c|c|c|c|}
         \hline
-        G & length & content encoding & AAAA(\texttt{`$\backslash$0'})\\
+        G & length & content: 4*\textit{length} nt's \\
         \hline
     \end{tabular}
     \\[3pt]{\small \textbf{Figure 3.} DNA pattern of a string.}

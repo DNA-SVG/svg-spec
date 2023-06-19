@@ -2,69 +2,362 @@
 \usepackage[utf8]{inputenc}
 \usepackage{DNASVG}
 \usepackage{amsmath}
+
+\title{DNA-SVG}
+\author{2694824893 }
+\date{September 2022}
+
 \begin{document}
+
+
+
+
 \noindent
+{\fontsize{12pt}{14.4pt}\textbf{Decoding rules:}}
+\par At both end of a DNA strand, there is primer and backward primer that are sequences representing the element type and showing where it begins and ends. The ``Required" part follows the primer, which contains every attribute that is necessary for this element. For every SVG tag, the required attributes are organized and stored in a fixed order, in the DNA sequence that represents it. You can check it in this document. Example is given in Figure 1. 
+\begin{center}
+    \begin{tabular}{c|c|c|c|c|c}
+        \hline 
+        Primer & x: 4bps & y: 8bps & z: xbps & $\cdots$ & Backward Primer\\
+        \hline
+    \end{tabular}\\[4pt]
+    Figure 1
+\end{center}
+\par the following is the ``Optional" part, which contains other supported attributes that are not considered necessary to build this element, but still useful enough. At the beginning there is an unsigned integer implying the total number of attributes listed in this part. Each optional attribute contains information including a key to identify it, the number of nt's to store its value, and its value. Example is given in Figure 2. 
+\begin{center}
+    \begin{tabular}{c|c|c|c|c|c}
+        \hline 
+        total & $\cdots$ & key & len & value & $\cdots$ \\
+        \hline
+    \end{tabular}\\[4pt]
+    Figure 2
+\end{center}
+{\fontsize{12pt}{14.4pt}\textbf{Value Representation:}}
+\par the DNA sequence representing a certain value begins with a type code, indicating the value type. The following is a stream of nucleotides, with fixed or volatile length. There are 4 types of nucleotide, mapped to the 4 digits of quaternary:
+\begin{center}
+    \begin{tabular}{c|c|c}
+        nucleotide & quaternary digit & binary digits \\
+        \hline
+        A & 0 & 00 \\
+        T & 1 & 01 \\
+        C & 2 & 10 \\
+        G & 3 & 11 \\
+    \end{tabular}
+\end{center}
+The value representation is based on this mapping principle.\\[6pt]
+\textbf{signed integer:}\\
+Type code: A(non-negative), T(negative)\\
+Length: volatile\\
+Representation: 
+\par A integer's type code may be \texttt{A} or \texttt{T}. \texttt{A} stands for non-nagative numbers and \texttt{T} stands for negative ones. A 2-nt sequence is attached to the type code, encoding the length of the quaternary representation of $|x|$ which is stored in the following sequence.
+\par When a integer is not used for representing the value of an attribute, but the size information of some container(e.g., the length of a string or the total number of optional attributes in a tag), the type code is omitted.
+\begin{center}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        A/T & length: 2 nt's & value: \textit{length} nt's \\
+        \hline
+    \end{tabular}
+    \\[3pt]{\small \textbf{Figure 1.} DNA pattern of a signed integer.}
+\end{center}
+\textbf{floating-point number:}\\
+Type code: C\\
+Length: 16 nts\\
+Representation: 
+\par We store a floating-point number according to IEEE floating-point standard, with a bit sequence which will be converted into DNA sequence. The form of representation is $V=(-1)^s \times M \times 2^E$. The length of the bit sequence is 32, including a sign bit, a 8-bit exponent field and a 23-bit fraction field.(for details see IEEE 754)
+
+\begin{center}
+    \begin{tabular}{|c|c|}
+        \hline
+        C & value: 16 nt's \\
+        \hline
+    \end{tabular}
+    \\[3pt]{\small \textbf{Figure 2.} DNA pattern of a floating-point number.}
+\end{center}
+\textbf{string:}\\
+Type code: G\\
+Length: volatile\\
+Representation:
+\par A string begins with its length(an integer indicating the number of characters in this string, and as is mentioned before, type code is omitted). We use ASCII code to encode a character. Each character in a string takes up 4 nt's (or 1 byte). 
+\begin{center}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        G & length & content: 4*\textit{length} nt's \\
+        \hline
+    \end{tabular}
+    \\[3pt]{\small \textbf{Figure 3.} DNA pattern of a string.}
+\end{center}
+{\fontsize{12pt}{14.4pt}\textbf{Addressing:}}
+\par In DNA storage, each strand in the DNA pool is a data block. To identify the position of a data block, an address sequence is attached to the strand, so that the information of the whole input string can be restored correctly. 
+\par In DNA-SVG encoding, before splitting or merging the strands for appropriate sequence length, a single strand stores one tag(or element) in \texttt{.svg} file. 
+\par The structure of a \texttt{.xml} file can be parsed as a tree. Each tag is a node on the tree. Thus, to identify the position of a tag in \texttt{.xml} file means to locate it on the xml tree. In tree storage, each node saves the identifier(a unique address or name) of all of its children.
+For shorter sequence length, we convert the xml tree to a \textbf{left-child, right-sibling binary tree} first. After this modification, the address sequence of a tag should have the following form:
+\begin{center}
+    \begin{tabular}{c|c|c}
+        \hline
+        self identifier & left-child identifier & right-sibling identifier\\
+        \hline
+    \end{tabular}
+    \\[3pt]{\small \textbf{Figure 1.} Address sequence.}
+\end{center}
+where we use the \textbf{dfs order} of the tag as its identifier.\\[10pt]
+{\fontsize{12pt}{14.4pt}\textbf{Merging/Splitting:}}
+\par
+We can get a encoded DNA list from the work we have done,but there is a problem that the actual DNA length of strands is negated. So we split long strands and merge short strands for addressing this issue.
+\par Suppose that the Min Length is 150 and Max length is 300. Then 1nt is used to record the type of strands. A for normal, T for long, C for short.
+\par 
+\textbf{Split Long Strands:} split the long stands to several strands. If the the last one is short, then make the last two strands half.
+\emph{Structure: T + (the id of the original strands) + (the order of current processed strands) + content}.
+\par 
+\textbf{Merge Short Strands:} merge the short ones
+\emph{Structure : C + (the encoded number of original strands length + content) for each short strands}.\\[10pt]
+{\fontsize{12pt}{14.4pt}\textbf{Supported Tags:}}
+\\[10pt]
 \begin{Element}{rect}
+    %\Primer{AGCT}
     \begin{Required}
-        \Line{1}{x}{integer}
-        \Line{2}{y}{floating-point}
-        \Line{3}{id}{string}
+        \Line{1}{x}{number}
+        \Line{2}{y}{number}
     \end{Required}
     \begin{Optional}
-        Global: id, class\\
-        Representation: zzz, ttt
+        id, class, style, fill, transform
     \end{Optional}
-\end{Element}
+    %\BackWardPrimer{AGCT}
+\end{Element} 
 
 \begin{Element}{circle}
+    %\Primer{AGCT}
     \begin{Required}
-        \Line{1}{x}{integer}
-        \Line{2}{y}{floating-point}
-        \Line{3}{id}{string}
+        \Line{1}{x}{number}
+        \Line{2}{y}{number}
     \end{Required}
     \begin{Optional}
-        Global: xxx, yyy\\
-        Representation: zzz, ttt
+        id, class, style, fill, transform
     \end{Optional}
+    %\BackWardPrimer{AGCT}
 \end{Element}
 
 \begin{Element}{g}
-    \begin{Required}
-        \Line{1}{cx}{floating-point}
-    \end{Required}
+    %\Primer{AGCT}
     \begin{Optional}
-        Global: id, class\\
-        Representation: zzz, ttt
+        id,class,style
     \end{Optional}
+    %\BackWardPrimer{AGCT}
 \end{Element}
 
 \begin{Element}{path}
+    %\Primer{AGCT}
     \begin{Required}
         \Line{1}{d}{string}
     \end{Required}
     \begin{Optional}
-        Global: id, class\\
-        Representation: zzz, ttt
+        id, class, style, fill, transform
     \end{Optional}
+    %\BackWardPrimer{AGCT}
 \end{Element}
 
 \begin{Element}{polygon}
+    %\Primer{AGCT}
     \begin{Required}
-        \Line{1}{points}{integer}
+        \Line{1}{points}{number}
     \end{Required}
     \begin{Optional}
-        Global: id, class\\
-        Representation: zzz, ttt
+        id, class, style, fill, transform
     \end{Optional}
+    %\BackWardPrimer{AGCT}
 \end{Element}
 
 \begin{Element}{style}
+    %\Primer{AGCT}
     \begin{Required}
-        \Line{1}{content}{string}
+        \Line{1}{text}{str}
     \end{Required}
     \begin{Optional}
-        Global: id, class\\
-        Representation: zzz, ttt
+        id, class, style, fill, transform
     \end{Optional}
+    %\BackWardPrimer{AGCT}
 \end{Element}
+
+\begin{Element}{ellipse}
+    %\Primer{AGCT}
+    \begin{Required}
+        \Line{1}{rx}{number}
+        \Line{2}{ry}{number}
+        \Line{3}{cx}{number}
+        \Line{4}{cy}{number}
+    \end{Required}
+    \begin{Optional}
+        id, class, style
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{defs}
+    %\Primer{AGCT}
+    \begin{Optional}
+        id, class, style
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{title}
+    %\Primer{AGCT}
+    \begin{Required}
+        \Line{1}{text}{string}
+    \end{Required}
+    \begin{Optional}
+        id, class, style
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{filter}
+    %\Primer{AGCT}
+    \begin{Optional}
+        id, class, style, filterRes, filterUnits, fill, transform
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{linearGradient}
+    %\Primer{AGCT}
+    \begin{Required}
+        \Line{1}{x1}{number}
+        \Line{2}{y1}{number}
+        \Line{3}{x2}{number}
+        \Line{4}{y2}{number}
+    \end{Required}
+    \begin{Optional}
+        id, class, style, gradientUnits, gradientTransform, spreadMethod, xlink:href, fill, transform
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{stop}
+    %\Primer{AGCT}
+    \begin{Required}
+        \Line{1}{offset}{number}
+    \end{Required}
+    \begin{Optional}
+        id, class, style, stop-color, stop-opacity, fill, transform
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{feOffset}
+    %\Primer{AGCT}
+    \begin{Required}
+        \Line{1}{in}{number}
+        \Line{2}{dx}{number}
+        \Line{3}{dy}{number}
+    \end{Required}
+    \begin{Optional}
+        id, class, style, result, fill, transform
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{feComposite}
+    %\Primer{AGCT}
+    \begin{Required}
+        \Line{1}{in}{str}
+        \Line{2}{in2}{str}
+        \Line{3}{operator}{str}
+    \end{Required}
+    \begin{Optional}
+        id, class, style, k1, k2, k3, k4, result, fill, transform
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{feColorMatrix}
+    %\Primer{AGCT}
+    \begin{Required}
+        \Line{1}{in}{str}
+        \Line{2}{values}{number}
+    \end{Required}
+    \begin{Optional}
+        id, class, style, type, result, fill, transform
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{feMerge}
+    %\Primer{AGCT}
+    \begin{Optional}
+        id, class, style
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{feMergeNode}
+    %\Primer{AGCT}
+    \begin{Required}
+     \Line{1}{in}{str}
+    \end{Required}
+    \begin{Optional}
+        id, class, style
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{feGaussianBlur}
+    %\Primer{AGCT}
+    \begin{Required}
+     \Line{1}{in}{str}
+     \Line{2}{stdDeviation}{number}
+    \end{Required}
+    \begin{Optional}
+        id, class, style, fill, transform edgeNode, result
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{line}
+    %\Primer{AGCT}
+    \begin{Required}
+     \Line{1}{x1}{number}
+     \Line{2}{x2}{number}
+     \Line{3}{y1}{number}
+     \Line{4}{y2}{number}
+    \end{Required}
+    \begin{Optional}
+        id, class, style, fill, transform
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{radialGradient}
+    %\Primer{AGCT}
+    \begin{Required}
+     \Line{1}{cx}{number}
+     \Line{2}{cy}{number}
+     \Line{3}{fr}{number}
+     \Line{4}{fy}{number}
+    \end{Required}
+    \begin{Optional}
+        id, class, style, fill, transform, gradientUnits, gradientTransform,spreadMethod
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{use}
+    %\Primer{AGCT}
+    \begin{Required}
+     \Line{1}{x}{number}
+     \Line{2}{y}{number}
+    \end{Required}
+    \begin{Optional}
+        id, class, style, fill, transform, href
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
+\begin{Element}{clipPath}
+    %\Primer{AGCT}
+    \begin{Optional}
+        id, class, style, fill, transform
+    \end{Optional}
+    %\BackWardPrimer{AGCT}
+\end{Element}
+
 \end{document}
